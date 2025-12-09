@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CExport | Exotic Fish Exporter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+    
+     <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ocean: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        sunset: {
+                            start: '#FF416C',
+                            end: '#FFB75E',
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Cinzel', 'serif'],
+                        body: ['Montserrat', 'sans-serif'],
+                        logo: ['Kaushan Script', 'cursive'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'swim-slow': 'swim-backward 35s linear infinite',
+                        'swim-med': 'swim-backward 25s linear infinite',
+                        'swim-fast': 'swim-backward 15s linear infinite',
+                        'scroll': 'scroll 40s linear infinite',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        /* CHANGED: Swim Backward (Right to Left) */
+                        'swim-backward': {
+                            '0%': { transform: 'translateX(105vw) scaleX(1)' }, /* Start off-screen Right */
+                            '100%': { transform: 'translateX(-10vw) scaleX(1)' }, /* End off-screen Left */
+                        },
+                        scroll: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f0f9ff; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #FF416C, #FFB75E); border-radius: 4px; }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .crimson-btn {
+            background: linear-gradient(135deg, #FF416C 0%, #FFB75E 100%);
+            background-size: 200% auto;
+            transition: 0.5s;
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 75, 43, 0.2);
+        }
+        .crimson-btn:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(255, 75, 43, 0.3);
+        }
+
+        .fish-bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 60%, #bae6fd 100%);
+        }
+
+        .vector-fish {
+            position: absolute;
+            fill: rgba(14, 165, 233, 0.1); 
+        }
+        
+        /* Different positions and delays */
+        .fish-1 { top: 15%; width: 60px; animation-delay: 0s; }
+        .fish-2 { top: 35%; width: 40px; animation-delay: -5s; opacity: 0.6; }
+        .fish-3 { top: 60%; width: 80px; animation-delay: -12s; }
+        .fish-4 { top: 85%; width: 50px; animation-delay: -20s; }
+        
+        .wave-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23f0f9ff' fill-opacity='1' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="font-body text-ocean-900 selection:bg-yellow-400 selection:text-ocean-900 relative">
+
+    <div class="fish-bg-layer">
+        <svg class="hidden">
+            <symbol id="icon-fish" viewBox="0 0 512 512">
+                <path d="M488.6 235.5c-9.2-8.3-43-37.4-85.7-44.1-39-6.1-51.5-23.8-54.8-28.9-22-34.6-67.9-63.1-133-72.2-66.2-9.2-127.4 9.1-157.6 30.5-30.8 21.8-66.7 18.2-70.5 17.8-6.6-.7-12.8 2.1-16.7 7.1-4.2 5.3-5.2 12.3-2.6 18.4l19.6 45.7c-5.7 3.5-12.8 11.2-12.8 22.2 0 11.1 7.2 18.9 12.9 22.4l-19.7 45.7c-2.6 6.1-1.6 13.1 2.6 18.4 3.9 5 10.1 7.8 16.7 7.1 3.8-.4 39.7-4 70.5 17.8 30.2 21.4 91.4 39.7 157.6 30.5 65.1-9.1 111-37.6 133-72.2 3.3-5.1 15.8-22.8 54.8-28.9 42.7-6.7 76.5-35.8 85.7-44.1 6.6-5.9 5-16.7-.4-21.6z"/>
+            </symbol>
+        </svg>
+
+        <svg class="vector-fish fish-1 animate-swim-slow"><use href="#icon-fish"></use></svg>
+        <svg class="vector-fish fish-2 animate-swim-fast"><use href="#icon-fish"></use></svg>
+        <svg class="vector-fish fish-3 animate-swim-med"><use href="#icon-fish"></use></svg>
+        <svg class="vector-fish fish-4 animate-swim-slow" style="top: 20%; animation-duration: 45s;"><use href="#icon-fish"></use></svg>
+        
+        <div class="absolute top-0 -left-4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute top-0 -right-4 w-96 h-96 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+    </div>
+
+    <nav class="fixed w-full z-50 transition-all duration-300 border-b border-white/10" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2">
+                     
+                    <span class="font-logo text-4xl text-white drop-shadow-md">CExport&nbsp;</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8">
+                        <a href="#home" class="text-white hover:text-orange-400 font-bold text-sm uppercase tracking-wide transition-colors drop-shadow-sm">Home</a>
+                        <a href="#collection" class="text-white hover:text-orange-400 font-bold text-sm uppercase tracking-wide transition-colors drop-shadow-sm">Collection</a>
+                        <a href="#gallery" class="text-white hover:text-orange-400 font-bold text-sm uppercase tracking-wide transition-colors drop-shadow-sm">Gallery</a>
+                        <a href="#services" class="text-white hover:text-orange-400 font-bold text-sm uppercase tracking-wide transition-colors drop-shadow-sm">Services</a>
+                        <a href="#contact" class="crimson-btn px-6 py-2 rounded-full text-sm font-bold tracking-wide shadow-lg border border-white/20">Contact Us</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white hover:text-orange-500">
+                        <i data-lucide="menu" class="h-8 w-8"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden hidden bg-ocean-900/95 backdrop-blur-xl absolute w-full border-b border-white/20 shadow-xl" id="mobile-menu">
+            <div class="px-4 pt-4 pb-6 space-y-2">
+                <a href="#home" class="block px-3 py-3 rounded-md text-white font-bold hover:bg-white/10">Home</a>
+                <a href="#collection" class="block px-3 py-3 rounded-md text-white font-bold hover:bg-white/10">Collection</a>
+                <a href="#gallery" class="block px-3 py-3 rounded-md text-white font-bold hover:bg-white/10">Gallery</a>
+                <a href="#services" class="block px-3 py-3 rounded-md text-white font-bold hover:bg-white/10">Services</a>
+                <a href="#contact" class="block text-center mt-4 px-3 py-3 rounded-md text-white crimson-btn font-bold">Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="relative z-10 h-screen w-full flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <video autoplay muted loop playsinline class="w-full h-full object-cover">
+                <source src="assets/Fish-hero.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-b from-ocean-900/40 via-ocean-600/20 to-ocean-100/10 mix-blend-multiply"></div>
+            <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-ocean-50 to-transparent"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
+            <h1 class="font-heading text-5xl md:text-8xl font-bold mb-6 text-white leading-tight drop-shadow-lg animate-float">
+               Bringing the Ocean's Finest<br>
+               <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">to Your World</span>
+            </h1>
+            
+            <p class="text-lg md:text-2xl text-ocean-50 mb-10 leading-relaxed max-w-2xl mx-auto font-medium drop-shadow-md">
+                "Discover the world's most exquisite tropical fish, carefully sourced and expertly shipped to collectors and aquariums worldwide."
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#collection" class="crimson-btn px-10 py-4 rounded-full font-bold text-lg flex items-center gap-2 group border border-white/20">
+                    View Catalog <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+                <a href="#contact" class="px-10 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full border border-white/40 shadow-lg transition-all font-bold flex items-center gap-2">
+                    Start Order
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="relative z-10 -mt-24 px-4 pb-12">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-light p-8 rounded-2xl text-center transform hover:-translate-y-2 transition-transform duration-300 border-t-4 border-orange-400 shadow-2xl bg-white/80">
+                    <span class="block text-5xl font-heading text-ocean-900 font-bold mb-2">300+</span>
+                    <span class="text-ocean-500 text-sm font-bold uppercase tracking-widest">Species Available</span>
+                </div>
+                <div class="glass-light p-8 rounded-2xl text-center transform hover:-translate-y-2 transition-transform duration-300 border-t-4 border-blue-400 shadow-2xl bg-white/80">
+                    <span class="block text-5xl font-heading text-ocean-900 font-bold mb-2">50+</span>
+                    <span class="text-ocean-500 text-sm font-bold uppercase tracking-widest">Countries Served</span>
+                </div>
+                <div class="glass-light p-8 rounded-2xl text-center transform hover:-translate-y-2 transition-transform duration-300 border-t-4 border-red-400 shadow-2xl bg-white/80">
+                    <span class="block text-5xl font-heading text-ocean-900 font-bold mb-2">15K+</span>
+                    <span class="text-ocean-500 text-sm font-bold uppercase tracking-widest">Happy Customers</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="relative z-10 py-20 overflow-hidden bg-white/50">
+        <div class="text-center mb-10">
+             <h3 class="font-heading text-2xl font-bold text-ocean-900 uppercase tracking-wider">Global Network</h3>
+             <p class="text-ocean-500 text-sm font-medium mt-2">Active shipping routes to major international hubs</p>
+        </div>
+        
+        <div class="relative flex overflow-x-hidden group backdrop-blur-sm py-10 border-y border-ocean-100">
+            <div class="animate-scroll flex items-center gap-16 whitespace-nowrap">
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/us.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">USA</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/jp.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">JAPAN</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/gb.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">UK</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/de.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">GERMANY</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/sg.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">SINGAPORE</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/au.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">AUSTRALIA</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/fr.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">FRANCE</span>
+                </div>
+                 <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/us.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">USA</span>
+                </div>
+                <div class="flex flex-col items-center gap-3 min-w-[100px] opacity-70 hover:opacity-100 transition-opacity">
+                    <img src="https://flagcdn.com/w160/jp.png" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-white">
+                    <span class="text-ocean-900 font-bold tracking-widest text-sm">JAPAN</span>
+                </div>
+            </div>
+        </div>
+    </section>
+  
+  <section id="gallery" class="relative z-10 py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div class="max-w-2xl">
+                    <h2 class="font-heading text-4xl font-bold text-ocean-900 mb-4">Gallery</h2>
+                    <p class="text-ocean-600 font-medium leading-relaxed">Recognised and awarded by fishermen organisations and institutes, we are proud to provide the environment most suitable for sea creatures to live and breed.</p>
+                </div>
+                
+                <div class="bg-white p-1 rounded-full shadow-lg border border-ocean-100 inline-flex">
+                    <button onclick="filterGallery('all')" class="gallery-btn active px-6 py-2 rounded-full text-sm font-bold text-white bg-ocean-900 shadow transition-all">All</button>
+                    <button onclick="filterGallery('freshwater')" class="gallery-btn px-6 py-2 rounded-full text-sm font-bold text-ocean-500 hover:bg-ocean-50 transition-all">Freshwater</button>
+                    <button onclick="filterGallery('marine')" class="gallery-btn px-6 py-2 rounded-full text-sm font-bold text-ocean-500 hover:bg-ocean-50 transition-all">Marine</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" id="gallery-container">
+                <div class="gallery-item freshwater group relative rounded-[2rem] overflow-hidden bg-white shadow-xl shadow-ocean-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="h-80 overflow-hidden relative">
+                        <img src="assets/fish-betta.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <button class="absolute bottom-4 right-4 bg-white text-orange-500 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-ocean-900 mb-1">Siamese Betta</h3>
+                        <p class="text-sm italic text-ocean-500 mb-2">Betta splendens</p>
+                        <p class="text-xs font-bold text-orange-500 uppercase tracking-wider">Origin: Thailand</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item freshwater group relative rounded-[2rem] overflow-hidden bg-white shadow-xl shadow-ocean-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="h-80 overflow-hidden relative">
+                        <img src="assets/fish-discus.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <button class="absolute bottom-4 right-4 bg-white text-orange-500 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-ocean-900 mb-1">Red Discus</h3>
+                        <p class="text-sm italic text-ocean-500 mb-2">Symphysodon discus</p>
+                        <p class="text-xs font-bold text-orange-500 uppercase tracking-wider">Origin: Amazon Basin</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item freshwater group relative rounded-[2rem] overflow-hidden bg-white shadow-xl shadow-ocean-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="h-80 overflow-hidden relative">
+                        <img src="assets/fish-angelfish.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <button class="absolute bottom-4 right-4 bg-white text-orange-500 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-ocean-900 mb-1">Angelfish</h3>
+                        <p class="text-sm italic text-ocean-500 mb-2">Pterophyllum scalare</p>
+                        <p class="text-xs font-bold text-orange-500 uppercase tracking-wider">Origin: South America</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item marine group relative rounded-[2rem] overflow-hidden bg-white shadow-xl shadow-ocean-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                    <div class="h-80 overflow-hidden relative">
+                        <img src="assets/fish-clownfish.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <button class="absolute bottom-4 right-4 bg-white text-orange-500 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-ocean-900 mb-1">Clownfish</h3>
+                        <p class="text-sm italic text-ocean-500 mb-2">Amphiprioninae</p>
+                        <p class="text-xs font-bold text-orange-500 uppercase tracking-wider">Origin: Indo-Pacific</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <section id="services" class="relative z-10 py-24 bg-white">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-ocean-50 rounded-l-[5rem]"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+            <div class="text-center mb-16 max-w-4xl mx-auto">
+                <h4 class="text-orange-500 text-sm font-bold uppercase tracking-widest mb-4">Why Choose Us</h4>
+                <h2 class="font-heading text-4xl md:text-5xl font-bold text-ocean-900 mb-6">
+                     <span class="text-orange-500">SERVICES</span>
+                </h2>
+                <p class="text-ocean-600 text-lg leading-relaxed">
+                    Now Chowdhury Enterprise is focusing on the export of more than 500 species of ornamental fish and shrimp, to its clients ranging from the U.S, Germany, the UK to Japan, Singapore and other countries around the globe. Recognised and awarded by fishermen organisations and institutes, we are proud to provide the environment most suitable for sea creatures to live and breed.
+                </p>
+            </div>
+            
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-ocean-100/50 border border-ocean-50 hover:border-orange-200 transition-all group hover:-translate-y-2 h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-ocean-50 flex items-center justify-center mb-6 text-ocean-600 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-red-400 group-hover:text-white transition-all shadow-sm">
+                        <i data-lucide="briefcase" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-ocean-900 mb-4">Breeding to Export</h3>
+                    <p class="text-ocean-500 leading-relaxed">
+                        Time and effort have been put into our research and experiments in order to have a decent production of these various types of fish.
+                    </p>
+                </div>
+                
+                <div class="bg-ocean-900 p-10 rounded-[2.5rem] shadow-xl shadow-ocean-900/20 transition-all group hover:-translate-y-2 text-white relative overflow-hidden h-full">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+                    <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-6 text-white group-hover:bg-white group-hover:text-ocean-900 transition-all shadow-sm">
+                        <i data-lucide="clipboard-list" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Export Process</h3>
+                    <p class="text-ocean-200 leading-relaxed">
+                        Fish exports from India must comply with the following regulatory requirements and registrations in order to be processed.
+                    </p>
+                </div>
+
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-ocean-100/50 border border-ocean-50 hover:border-orange-200 transition-all group hover:-translate-y-2 h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-ocean-50 flex items-center justify-center mb-6 text-ocean-600 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-red-400 group-hover:text-white transition-all shadow-sm">
+                        <i data-lucide="bar-chart-3" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-ocean-900 mb-4">Fish Death During Travel</h3>
+                    <p class="text-ocean-500 leading-relaxed">
+                        In circumstances where there is high mortality (>10%) and discrepancies are discovered, the respective airline must be reported and documented.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="relative z-10 py-24 bg-ocean-50 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                
+                <div class="space-y-8 order-2 lg:order-1">
+                    <div>
+                         <span class="inline-block py-1 px-3 rounded-md bg-orange-100 text-orange-600 text-xs font-bold uppercase tracking-wider mb-4">Who We Are</span>
+                        <h2 class="font-heading text-4xl md:text-5xl font-bold text-ocean-900 mb-6 leading-tight">
+                            Redefining <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-ocean-600 to-ocean-400">Aquatic Export</span>
+                        </h2>
+                        <p class="text-ocean-600 leading-relaxed text-lg font-medium">
+                            Now CExport is focusing on the export of more than 500 species of ornamental fish to clients ranging from the U.S, Germany, and the UK to Japan and Singapore.
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm">
+                            <div class="text-orange-500">
+                                <i data-lucide="eye" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-ocean-900">Vision</h4>
+                                <p class="text-sm text-ocean-500 mt-1">We supply consumers with high-quality, transparent, and ecological products based on sustainable practices.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm">
+                            <div class="text-orange-500">
+                                <i data-lucide="compass" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-ocean-900">Mission</h4>
+                                <p class="text-sm text-ocean-500 mt-1">Employing our experience, network, and infrastructure to provide excellence before, during, and after export.</p>
+                            </div>
+                        </div>
+                         <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm">
+                            <div class="text-orange-500">
+                                <i data-lucide="anchor" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-ocean-900">Global Reach</h4>
+                                <p class="text-sm text-ocean-500 mt-1">Our connections with elite breeders ensure we meet the exacting expectations of international partners.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 bg-white rounded-xl shadow-sm">
+                            <div class="text-orange-500">
+                                <i data-lucide="map" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-ocean-900">Logistics</h4>
+                                <p class="text-sm text-ocean-500 mt-1">Precision scheduling with orders processed 10-14 days in advance for optimal quarantine protocols.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button class="crimson-btn px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2">
+                            About Us <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative order-1 lg:order-2">
+                    <div class="relative rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white">
+                         <img src="assets/photo-1599488615731-7e5c2823ff28.avif" 
+                             alt="CExport Facility" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/20 group cursor-pointer">
+                            <div class="w-20 h-20 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white transition-transform duration-300 hover:scale-110">
+                                <i data-lucide="award" class="w-8 h-8 text-white fill-white ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl border border-ocean-50 hidden md:block animate-float">
+                        <div class="flex items-center gap-4">
+                            <div class="text-4xl font-bold text-ocean-900">1998</div>
+                            <div class="text-xs font-bold text-ocean-500 uppercase leading-tight">Established<br>Year</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+   
+     <section id="contact" class="relative z-10 py-24 wave-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="glass-light rounded-[3rem] p-8 md:p-12 shadow-2xl border border-white">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    
+                    <div>
+                        <h2 class="font-heading text-4xl font-bold text-ocean-900 mb-6">
+                            Contact <span class="text-orange-500">Us</span>
+                        </h2>
+                        <div class="w-24 h-1 bg-gradient-to-r from-orange-500 to-transparent rounded-full mb-6"></div>
+                        <p class="text-ocean-600 text-lg mb-8 leading-relaxed">
+                            CExport rapidly became the leading exporter of ornamental fish. Now the company is focusing on the export of more than 500 species to clients ranging from the U.S, Germany, and the UK to Japan and Singapore.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="w-full h-40 rounded-2xl overflow-hidden shadow-sm border border-ocean-50 relative bg-ocean-100">
+                                 <iframe 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3745.862897486806!2d88.3638953149171!3d22.57264698518247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0276669f9e7b2f%3A0x6e3c08b7d9f7b1b0!2sKolkata%2C%20West%20Bengal!5e0!3m2!1sen!2sin!4v1625638492837!5m2!1sen!2sin" 
+                                    width="100%" 
+                                    height="100%" 
+                                    style="border:0; filter: grayscale(100%) opacity(0.8);" 
+                                    allowfullscreen="" 
+                                    loading="lazy">
+                                </iframe>
+                                <div class="absolute bottom-2 left-2 bg-white px-3 py-1 rounded-md text-xs font-bold shadow">
+                                    8, A.J.C. Bose Road, Kolkata
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-ocean-50">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-ocean-900 text-sm uppercase">Email Us</h4>
+                                        <p class="text-ocean-500 text-xs">export@cexport.com</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-ocean-50">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                        <i data-lucide="phone" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-ocean-900 text-sm uppercase">Call Us</h4>
+                                        <p class="text-ocean-500 text-xs">+91 80130 14117</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-[2rem] shadow-lg border border-ocean-50 relative">
+                         <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-orange-100 to-transparent rounded-tr-[2rem]"></div>
+                        <form class="space-y-5">
+                            <div class="grid grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold text-ocean-400 uppercase mb-2">Your Name</label>
+                                    <input type="text" class="w-full bg-ocean-50 border-transparent focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-100 rounded-xl px-4 py-3 text-ocean-900 transition-all outline-none" placeholder="John Doe">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-ocean-400 uppercase mb-2">Your Email</label>
+                                    <input type="email" class="w-full bg-ocean-50 border-transparent focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-100 rounded-xl px-4 py-3 text-ocean-900 transition-all outline-none" placeholder="john@example.com">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-ocean-400 uppercase mb-2">Subject</label>
+                                <input type="text" class="w-full bg-ocean-50 border-transparent focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-100 rounded-xl px-4 py-3 text-ocean-900 transition-all outline-none" placeholder="Wholesale Inquiry">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-ocean-400 uppercase mb-2">Message</label>
+                                <textarea rows="4" class="w-full bg-ocean-50 border-transparent focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-100 rounded-xl px-4 py-3 text-ocean-900 transition-all outline-none resize-none" placeholder="Tell us about your requirements..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full crimson-btn text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:-translate-y-1">
+                                Send Message <i data-lucide="send" class="w-4 h-4 inline-block ml-2"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="relative z-10 bg-white pt-20 pb-8 border-t border-ocean-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-6">
+                        
+                        <span class="font-logo text-3xl text-ocean-900">CExport</span>
+                    </div>
+                    <p class="text-ocean-500 text-sm leading-relaxed">
+                        Leading exporter of marine ornamental fish and invertebrates. Dedicated to sustainability and ethical harvesting practices since 1998.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-ocean-900 font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3 text-sm text-ocean-600">
+                        <li><a href="#" class="hover:text-orange-500 transition-colors">Our Story</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition-colors">Sustainability</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition-colors">DOA Policy</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition-colors">Shipping Guide</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-ocean-900 font-bold mb-6">Contact</h4>
+                    <ul class="space-y-3 text-sm text-ocean-600">
+                        <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-orange-500"></i> 123 Reef Avenue, Cairns, QLD</li>
+                        <li class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-orange-500"></i> +61 (0) 412 345 678</li>
+                        <li class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-orange-500"></i> export@cexport.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-ocean-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-ocean-400 text-xs">© 2024 CExport. All rights reserved.</p>
+                <p>Design By Que Systems</p>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-ocean-50 flex items-center justify-center text-ocean-600 hover:bg-orange-500 hover:text-white transition-all"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-ocean-50 flex items-center justify-center text-ocean-600 hover:bg-orange-500 hover:text-white transition-all"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-ocean-50 flex items-center justify-center text-ocean-600 hover:bg-orange-500 hover:text-white transition-all"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Gallery Filter Logic
+        function filterGallery(type) {
+            const items = document.querySelectorAll('.gallery-item');
+            const buttons = document.querySelectorAll('.gallery-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-ocean-900', 'text-white', 'shadow');
+                btn.classList.add('text-ocean-500');
+                if(btn.textContent.toLowerCase().includes(type) || (type === 'all' && btn.textContent === 'All')) {
+                    btn.classList.add('bg-ocean-900', 'text-white', 'shadow');
+                    btn.classList.remove('text-ocean-500');
+                }
+            });
+
+            items.forEach(item => {
+                if (type === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    if (item.classList.contains(type)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Navbar Frost Effect on Scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                // When scrolling, turn white for readability on light sections
+                navbar.classList.add('shadow-md', 'bg-white/95');
+                navbar.classList.remove('border-b', 'border-white/10');
+                
+                // Change Text Colors to Dark
+                const links = navbar.querySelectorAll('a, button, span.font-logo');
+                links.forEach(link => {
+                    if(link.classList.contains('font-logo')) {
+                         link.classList.remove('text-white');
+                         link.classList.add('text-transparent', 'bg-clip-text', 'bg-gradient-to-r', 'from-ocean-600', 'to-ocean-900');
+                    } else if(link.id !== 'mobile-menu-btn' && !link.classList.contains('crimson-btn')) {
+                        link.classList.remove('text-white');
+                        link.classList.add('text-ocean-800');
+                    } else if(link.id === 'mobile-menu-btn') {
+                        link.classList.remove('text-white');
+                        link.classList.add('text-ocean-800');
+                    }
+                });
+
+            } else {
+                // At top (Hero Video), stay transparent/white text
+                navbar.classList.remove('shadow-md', 'bg-white/95');
+                navbar.classList.add('border-b', 'border-white/10');
+
+                 // Revert Text Colors to White
+                 const links = navbar.querySelectorAll('a, button, span.font-logo');
+                 links.forEach(link => {
+                    if(link.classList.contains('font-logo')) {
+                         link.classList.add('text-white');
+                         link.classList.remove('text-transparent', 'bg-clip-text', 'bg-gradient-to-r', 'from-ocean-600', 'to-ocean-900');
+                    } else if(link.id !== 'mobile-menu-btn' && !link.classList.contains('crimson-btn')) {
+                        link.classList.add('text-white');
+                        link.classList.remove('text-ocean-800');
+                    } else if(link.id === 'mobile-menu-btn') {
+                        link.classList.add('text-white');
+                        link.classList.remove('text-ocean-800');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

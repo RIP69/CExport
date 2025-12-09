@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CExport | Exotic Fish Exporter</title>
+    
+    <!-- Scripts & Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Oswald:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            white: '#FFFFFF',   
+                            light: '#E0F7FA',   // Lightest Blue/Cyan background
+                            blue: '#0096C7',    // Primary: Light Ocean Blue (Vibrant)
+                            deep: '#0077B6',    // Hover/Active states
+                            navy: '#023E8A',    // Text Color (Deep Ocean) for contrast
+                            accent: '#FFC300',  // Minor: Crimson Yellow / Gold
+                            accentHover: '#FFD60A',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        heading: ['"Oswald"', 'sans-serif'],
+                        logo: ['"Kaushan Script"', 'cursive'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'scroll': 'scroll 40s linear infinite',
+                        'rise': 'rise 15s infinite linear',
+                        'water': 'water 10s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        scroll: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        },
+                        rise: {
+                            '0%': { bottom: '-10%', transform: 'translateX(0)', opacity: '0' },
+                            '50%': { opacity: '0.6' },
+                            '100%': { bottom: '110%', transform: 'translateX(-20px)', opacity: '0' },
+                        },
+                         water: {
+                            '0%, 100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
+                            '50%': { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #E0F7FA; }
+        ::-webkit-scrollbar-thumb { background: #0096C7; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0077B6; }
+
+        /* Typography Polish */
+        .text-shadow-sm { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+        
+        /* Water Glass Effect */
+        .glass-water {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        /* Bubbles */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Wave Dividers */
+        .wave-separator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            transform: rotate(180deg);
+        }
+        .wave-separator svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 80px;
+        }
+        .wave-top {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        .wave-top svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 80px;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #023E8A 0%, #0096C7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Swiper Pagination Customization */
+        .swiper-pagination-bullet {
+            background-color: #0096C7 !important;
+            opacity: 0.5;
+        }
+        .swiper-pagination-bullet-active {
+            background-color: #0077B6 !important;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-brand-light text-brand-navy font-sans antialiased overflow-x-hidden">
+
+    <!-- Ambient Bubbles Container -->
+    <div id="bubble-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden h-full w-full"></div>
+
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4 glass-water border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2 group">
+                    <span class="font-logo text-4xl text-brand-blue transform -rotate-2 drop-shadow-sm group-hover:scale-110 transition-transform duration-300">CExport</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-blue transition-colors relative group">
+                        Home
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-blue transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#collection" class="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-blue transition-colors relative group">
+                        Collection
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-blue transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#services" class="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-blue transition-colors relative group">
+                        Services
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-blue transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#gallery" class="text-sm font-bold uppercase tracking-widest text-brand-navy hover:text-brand-blue transition-colors relative group">
+                        Gallery
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-blue transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#contact" class="px-6 py-3 bg-gradient-to-r from-brand-blue to-brand-deep text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full shadow-lg shadow-brand-blue/30 hover:shadow-brand-blue/50 transition-all transform hover:-translate-y-1 hover:scale-105">
+                        Contact Us
+                    </a>
+                </div>
+
+                <!-- Mobile Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-brand-navy hover:text-brand-blue">
+                    <i data-lucide="menu" class="w-8 h-8"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xl py-4">
+            <div class="flex flex-col space-y-4 px-6">
+                <a href="#home" class="text-lg font-bold text-brand-navy">Home</a>
+                <a href="#collection" class="text-lg font-bold text-brand-navy">Collection</a>
+                <a href="#services" class="text-lg font-bold text-brand-navy">Services</a>
+                <a href="#contact" class="text-lg font-bold text-brand-blue">Contact Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
+        
+        <!-- Video BG with Watery Overlay -->
+        <div class="absolute inset-0 overflow-hidden z-0">
+             <video autoplay muted loop playsinline class="w-full h-full object-cover opacity-90 transform scale-105">
+                <source src="assets/Fish-hero.mp4" type="video/mp4">
+                 <img src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?q=80&w=2000&auto=format&fit=crop" class="w-full h-full object-cover">
+            </video>
+            <!-- Ocean Gradient Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-light/95 via-brand-light/60 to-brand-blue/10 mix-blend-multiply"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center h-full">
+            <div class="pt-20 md:pt-0" data-aos="fade-right" data-aos-duration="1000">
+                
+                <!-- Hero Text -->
+                <h1 class="font-heading text-6xl md:text-8xl font-bold leading-[0.9] text-brand-white mb-6 drop-shadow-sm">
+                    Bringing the <br> Ocean's Finest<br>to Your World
+                </h1>
+                <p class="font-serif italic text-xl text-brand-white mb-8 max-w-md border-l-4 border-brand-accent pl-4">
+                    "Discover the world's most exquisite tropical fish, carefully sourced and expertly shipped to collectors and aquariums worldwide."
+                </p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <a href="#collection" class="px-8 py-4 bg-brand-blue text-white font-bold uppercase tracking-wider hover:bg-brand-deep transition-all shadow-lg shadow-brand-blue/40 flex items-center gap-2 group rounded-full">
+                        View Catalog <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="#contact" class="px-8 py-4 border-2 border-brand-blue text-brand-blue font-bold uppercase tracking-wider hover:bg-brand-blue hover:text-white transition-colors rounded-full backdrop-blur-sm">
+                        Start Order
+                    </a>
+                </div>
+            </div>
+            
+             <!-- Floating Badge -->
+            <div class="hidden md:block relative h-full">
+                <div class="absolute top-1/3 right-10 glass-water p-4 rounded-2xl shadow-xl animate-float z-20" style="animation-delay: 1s;">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-brand-light p-2 rounded-full text-brand-blue shadow-inner"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
+                        <div>
+                            <p class="font-bold text-brand-navy">100% Live Arrival</p>
+                            <p class="text-xs text-brand-deep">Guaranteed Safe</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wave Separator -->
+        <div class="wave-separator">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-brand-blue"></path>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Stats Ticker -->
+    <section class="bg-brand-blue py-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <!-- Bubbles in section -->
+        <div class="absolute top-0 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-float"></div>
+        <div class="absolute bottom-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float" style="animation-delay: 2s"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/20">
+                <div data-aos="fade-up" data-aos-delay="0">
+                    <span class="block text-5xl md:text-6xl font-heading font-bold text-white mb-2 drop-shadow-md">300<span class="text-brand-accent">+</span></span>
+                    <span class="text-brand-light font-bold text-xs uppercase tracking-widest">Species Available</span>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <span class="block text-5xl md:text-6xl font-heading font-bold text-white mb-2 drop-shadow-md">50<span class="text-brand-accent">+</span></span>
+                    <span class="text-brand-light font-bold text-xs uppercase tracking-widest">Countries Served</span>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <span class="block text-5xl md:text-6xl font-heading font-bold text-white mb-2 drop-shadow-md">15K<span class="text-brand-accent">+</span></span>
+                    <span class="text-brand-light font-bold text-xs uppercase tracking-widest">Happy Customers</span>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="300">
+                    <span class="block text-5xl md:text-6xl font-heading font-bold text-white mb-2 drop-shadow-md">24<span class="text-brand-accent">/</span>7</span>
+                    <span class="text-brand-light font-bold text-xs uppercase tracking-widest">Support</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Network / Marquee (Updated with Swiper) -->
+    <section class="py-20 bg-white relative">
+        <!-- Top Wave to transition from blue to white -->
+        <div class="wave-top">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-brand-blue"></path>
+            </svg>
+        </div>
+
+        <p class="text-center text-brand-blue/60 font-bold uppercase tracking-[0.3em] text-xs mb-2 mt-8">Global Network</p>
+        <p class="text-center text-gray-400 text-sm mb-12">Active shipping routes to major international hubs</p>
+        
+        <div class="relative max-w-7xl mx-auto px-6 group">
+            <div class="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+
+            <div class="clients-slider swiper">
+                <div class="swiper-wrapper align-items-center">
+                    <!-- USA -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/us.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="USA">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">USA</h4>
+                    </div>
+                    <!-- Japan -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/jp.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="Japan">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">Japan</h4>
+                    </div>
+                    <!-- UK -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/gb.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="UK">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">UK</h4>
+                    </div>
+                    <!-- Germany -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/de.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="Germany">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">Germany</h4>
+                    </div>
+                    <!-- Singapore -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/sg.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="Singapore">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">Singapore</h4>
+                    </div>
+                    <!-- Australia -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/au.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="Australia">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">Australia</h4>
+                    </div>
+                    <!-- Canada -->
+                    <div class="swiper-slide text-center flex flex-col items-center">
+                        <img src="https://flagcdn.com/w160/ca.png" class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 shadow-lg mx-auto mb-4" alt="Canada">
+                        <h4 class="text-lg font-heading font-bold text-gray-400 uppercase tracking-widest">Canada</h4>
+                    </div>
+                </div>
+                <!-- <div class="swiper-pagination mt-8"></div> -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Collection Showcase (Gallery) -->
+    <section id="gallery" class="py-24 bg-gradient-to-b from-brand-light to-white relative">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+                <div data-aos="fade-right">
+                    <h2 class="font-heading text-5xl font-bold text-brand-navy mb-4">Gallery</h2>
+                    <p class="text-gray-600 max-w-lg text-lg">Recognised and awarded by fishermen organisations and institutes, we are proud to provide the environment most suitable for sea creatures to live and breed.</p>
+                </div>
+                
+                <!-- Filters (Pill Style) -->
+                <div class="flex gap-2 bg-white/50 backdrop-blur p-1.5 rounded-full border border-white shadow-lg mt-6 md:mt-0" data-aos="fade-left">
+                    <button onclick="filterGallery('all')" class="gallery-btn active px-6 py-2 rounded-full text-sm font-bold text-white bg-brand-blue shadow-lg transition-all">All</button>
+                    <button onclick="filterGallery('freshwater')" class="gallery-btn px-6 py-2 rounded-full text-sm font-bold text-gray-500 hover:text-brand-blue hover:bg-white transition-all">Freshwater</button>
+                    <button onclick="filterGallery('marine')" class="gallery-btn px-6 py-2 rounded-full text-sm font-bold text-gray-500 hover:text-brand-blue hover:bg-white transition-all">Marine</button>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Card 1 -->
+                <div class="gallery-item freshwater group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-blue/20 transition-all duration-500 transform hover:-translate-y-2 border border-brand-light" data-aos="fade-up" data-aos-delay="0">
+                    <div class="relative h-80 overflow-hidden">
+                        <img src="assets/fish-betta.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Betta">
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-blue/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <button class="bg-brand-accent text-brand-navy font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider w-full hover:bg-white transition-colors shadow-lg">View Details</button>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md text-brand-navy font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Freshwater</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif font-bold text-2xl text-brand-navy">Siamese Betta</h3>
+                        <p class="text-brand-blue font-medium mb-2">Betta splendens</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 border-t border-gray-100 pt-3 mt-3">
+                            <span>Thailand</span>
+                            <span class="font-bold text-brand-navy">Grade A+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="gallery-item freshwater group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-blue/20 transition-all duration-500 transform hover:-translate-y-2 border border-brand-light" data-aos="fade-up" data-aos-delay="100">
+                    <div class="relative h-80 overflow-hidden">
+                        <img src="assets/fish-discus.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Discus">
+                         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <button class="bg-brand-accent text-brand-navy font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider w-full hover:bg-white transition-colors shadow-lg">View Details</button>
+                        </div>
+                        <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md text-brand-navy font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Freshwater</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif font-bold text-2xl text-brand-navy">Red Discus</h3>
+                        <p class="text-brand-blue font-medium mb-2">Symphysodon</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 border-t border-gray-100 pt-3 mt-3">
+                            <span>Amazon</span>
+                            <span class="font-bold text-brand-navy">Wild Caught</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="gallery-item freshwater group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-blue/20 transition-all duration-500 transform hover:-translate-y-2 border border-brand-light" data-aos="fade-up" data-aos-delay="200">
+                    <div class="relative h-80 overflow-hidden">
+                        <img src="assets/fish-angelfish.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Angel">
+                         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <button class="bg-brand-accent text-brand-navy font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider w-full hover:bg-white transition-colors shadow-lg">View Details</button>
+                        </div>
+                         <div class="absolute top-4 left-4 bg-white/80 backdrop-blur-md text-brand-navy font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Freshwater</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif font-bold text-2xl text-brand-navy">Angelfish</h3>
+                        <p class="text-brand-blue font-medium mb-2">Pterophyllum</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 border-t border-gray-100 pt-3 mt-3">
+                            <span>S. America</span>
+                            <span class="font-bold text-brand-navy">Breeding Pair</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="gallery-item marine group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-blue/20 transition-all duration-500 transform hover:-translate-y-2 border border-brand-light" data-aos="fade-up" data-aos-delay="300">
+                    <div class="relative h-80 overflow-hidden">
+                        <img src="assets/fish-clownfish.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Clown">
+                         <div class="absolute inset-0 bg-gradient-to-t from-brand-blue/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <button class="bg-brand-accent text-brand-navy font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider w-full hover:bg-white transition-colors shadow-lg">View Details</button>
+                        </div>
+                         <div class="absolute top-4 left-4 bg-brand-blue text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Marine</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif font-bold text-2xl text-brand-navy">Percula Clown</h3>
+                        <p class="text-brand-blue font-medium mb-2">Amphiprion</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 border-t border-gray-100 pt-3 mt-3">
+                            <span>Indo-Pacific</span>
+                            <span class="font-bold text-brand-navy">Tank Raised</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="#" class="inline-block border-b-2 border-brand-accent pb-1 text-brand-navy font-bold uppercase tracking-widest hover:text-brand-blue hover:border-brand-blue transition-colors">View Full Catalog</a>
+            </div>
+        </div>
+        
+        <!-- Bottom Wave -->
+        <div class="wave-separator">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-white"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Services / Advertisement Block -->
+    <section id="services" class="py-24 bg-white overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                
+                <!-- Animated Image Stack with Water Drop Shape -->
+                <div class="relative" data-aos="fade-right">
+                    <div class="absolute -top-10 -left-10 w-40 h-40 bg-brand-accent rounded-full opacity-20 blur-2xl"></div>
+                    <div class="relative z-10 rounded-[4rem] rounded-tl-none overflow-hidden shadow-2xl border-8 border-brand-light animate-water bg-white">
+                        <img src="assets/photo-1599488615731-7e5c2823ff28.avif" class="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-1000">
+                    </div>
+                    <!-- Badge -->
+                    <div class="absolute -bottom-6 -right-6 bg-brand-blue text-white p-8 rounded-full shadow-xl shadow-brand-blue/30 z-20 w-32 h-32 flex flex-col items-center justify-center border-4 border-white">
+                        <p class="font-heading font-bold text-3xl mb-0">100%</p>
+                        <p class="text-[0.6rem] uppercase tracking-widest text-brand-light">Compliance</p>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div data-aos="fade-left">
+                    <h4 class="text-brand-blue font-bold tracking-[0.2em] uppercase text-sm mb-4 flex items-center gap-2">
+                        <span class="w-8 h-0.5 bg-brand-blue"></span> Why Choose Us
+                    </h4>
+                    <h2 class="font-heading text-5xl md:text-6xl font-bold text-brand-navy mb-6 leading-tight">
+                        SERVICES
+                    </h2>
+                    <p class="text-gray-500 text-lg mb-8 leading-relaxed">
+                        Now Chowdhury Enterprise is focusing on the export of more than 500 species of ornamental fish and shrimp, to its clients ranging from the U.S, Germany, the UK to Japan, Singapore and other countries around the globe. Recognised and awarded by fishermen organisations and institutes, we are proud to provide the environment most suitable for sea creatures to live and breed.
+                    </p>
+
+                    <div class="space-y-6">
+                        <!-- Card 1 -->
+                        <div class="flex items-start gap-4 p-6 rounded-2xl border border-brand-light hover:bg-brand-light/50 transition-colors group shadow-sm hover:shadow-md">
+                            <div class="w-12 h-12 bg-white border border-brand-light shadow-md rounded-full flex items-center justify-center text-brand-accent group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                                <i data-lucide="briefcase" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-brand-navy text-xl">Breeding to Export</h3>
+                                <p class="text-sm text-gray-500 mt-2">Time and effort have been put into our research and experiments in order to have a decent production of these various types of fish.</p>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="flex items-start gap-4 p-6 rounded-2xl border border-brand-light hover:bg-brand-light/50 transition-colors group shadow-sm hover:shadow-md">
+                            <div class="w-12 h-12 bg-white border border-brand-light shadow-md rounded-full flex items-center justify-center text-brand-accent group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                                <i data-lucide="clipboard-list" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-brand-navy text-xl">Export Process</h3>
+                                <p class="text-sm text-gray-500 mt-2">Fish exports from India must comply with the following regulatory requirements and registrations in order to be processed.</p>
+                            </div>
+                        </div>
+                        <!-- Card 3 -->
+                        <div class="flex items-start gap-4 p-6 rounded-2xl border border-brand-light hover:bg-brand-light/50 transition-colors group shadow-sm hover:shadow-md">
+                            <div class="w-12 h-12 bg-white border border-brand-light shadow-md rounded-full flex items-center justify-center text-brand-accent group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                                <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-brand-navy text-xl">Fish Death During Travel</h3>
+                                <p class="text-sm text-gray-500 mt-2">In circumstances where there is high mortality (>10%) and discrepancies are discovered, the respective airline must be reported and documented.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   
+
+    <!-- CTA / Contact -->
+    <section id="contact" class="py-24 bg-brand-light relative">
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="glass-water rounded-[3rem] shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+                
+                <!-- Info Side -->
+                <div class="bg-brand-blue p-12 text-white relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-blue to-brand-deep"></div>
+                    <!-- Decorative Circles -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="absolute bottom-0 left-0 w-40 h-40 bg-brand-accent/20 rounded-full blur-3xl"></div>
+
+                    <div class="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                            <h2 class="font-heading text-4xl font-bold mb-6">Contact Us</h2>
+                            <p class="text-brand-light mb-8">CExport rapidly became the leading exporter of ornamental fish. Now the company is focusing on the export of more than 500 species to clients ranging from the U.S, Germany, and the UK to Japan and Singapore.</p>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-accent backdrop-blur-sm shadow-inner">
+                                        <i data-lucide="phone" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="font-bold tracking-widest">+91 80130 14117</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-accent backdrop-blur-sm shadow-inner">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="font-bold tracking-widest">export@cexport.com</span>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-brand-accent shrink-0 backdrop-blur-sm shadow-inner">
+                                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="font-bold tracking-widest text-sm leading-relaxed">8, A.J.C. Bose Road, Ward No-10,<br>Newbarrackpore, Kolkata-700131,<br>West Bengal, India</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12">
+                            <p class="text-xs uppercase text-brand-light mb-2">Social Connect</p>
+                            <div class="flex gap-4">
+                                <a href="#" class="hover:text-brand-accent transition-colors"><i data-lucide="facebook"></i></a>
+                                <a href="#" class="hover:text-brand-accent transition-colors"><i data-lucide="instagram"></i></a>
+                                <a href="#" class="hover:text-brand-accent transition-colors"><i data-lucide="twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Side -->
+                <div class="p-12 bg-white/80">
+                    <form class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-brand-navy mb-2">Company Name</label>
+                            <input type="text" class="w-full bg-white border border-brand-light rounded-xl p-4 focus:outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-light transition-all shadow-sm" placeholder="e.g. Ocean Blue Ltd">
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-brand-navy mb-2">Contact Person</label>
+                                <input type="text" class="w-full bg-white border border-brand-light rounded-xl p-4 focus:outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-light transition-all shadow-sm" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-brand-navy mb-2">Email</label>
+                                <input type="email" class="w-full bg-white border border-brand-light rounded-xl p-4 focus:outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-light transition-all shadow-sm" placeholder="john@company.com">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-brand-navy mb-2">Requirements</label>
+                            <textarea rows="3" class="w-full bg-white border border-brand-light rounded-xl p-4 focus:outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-light transition-all shadow-sm" placeholder="Tell us about your order needs..."></textarea>
+                        </div>
+                        <button class="w-full py-4 bg-brand-accent hover:bg-brand-accentHover text-white font-bold uppercase tracking-widest shadow-lg transform hover:-translate-y-1 transition-all flex justify-center gap-2 rounded-xl">
+                            Request Price List <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-brand-white border-t border-gray-100 py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                 <span class="font-logo text-4xl text-brand-blue transform -rotate-2 drop-shadow-sm">CExport</span>
+            </div>
+            <p class="text-gray-400 text-sm">© 2024 CExport. All rights reserved.</p>
+            <p>Design By Que Systems</p>
+            <div class="flex gap-6 text-sm font-bold text-brand-navy">
+                <a href="#" class="hover:text-brand-blue">Privacy</a>
+                <a href="#" class="hover:text-brand-blue">Terms</a>
+                <a href="#" class="hover:text-brand-blue">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Init Scripts -->
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // Init Icons
+        lucide.createIcons();
+        
+        // Init AOS
+        AOS.init({
+            once: true,
+            offset: 100,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+
+        // Bubble Generator
+        function createBubbles() {
+            const container = document.getElementById('bubble-container');
+            const bubbleCount = 30;
+
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                const size = Math.random() * 20 + 5;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                // Start below viewport
+                bubble.style.bottom = `-${Math.random() * 20 + 10}%`; 
+                const duration = Math.random() * 15 + 10;
+                const delay = Math.random() * 20;
+                
+                bubble.style.animation = `rise ${duration}s infinite linear`;
+                bubble.style.animationDelay = `-${delay}s`; // Start immediately at random positions
+                bubble.style.opacity = Math.random() * 0.4 + 0.1;
+                container.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        // Mobile Menu
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Gallery Filter
+        function filterGallery(type) {
+            const items = document.querySelectorAll('.gallery-item');
+            const buttons = document.querySelectorAll('.gallery-btn');
+            
+            // Update Buttons
+            buttons.forEach(b => {
+                b.classList.remove('bg-brand-blue', 'text-white', 'shadow-lg');
+                b.classList.add('text-gray-500');
+                if(b.textContent.toLowerCase() === type || (type === 'all' && b.textContent === 'All')) {
+                    b.classList.add('bg-brand-blue', 'text-white', 'shadow-lg');
+                    b.classList.remove('text-gray-500');
+                }
+            });
+
+            // Filter
+            items.forEach(item => {
+                if(type === 'all' || item.classList.contains(type)) {
+                    item.style.display = 'block';
+                    // Re-trigger AOS if hidden previously
+                    item.classList.add('aos-animate'); 
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Navbar Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(window.scrollY > 50) {
+                nav.classList.add('py-2', 'shadow-md', 'bg-white/80');
+                nav.classList.remove('py-4', 'glass-water');
+            } else {
+                nav.classList.add('py-4', 'glass-water');
+                nav.classList.remove('py-2', 'shadow-md', 'bg-white/80');
+            }
+        });
+
+        // Initialize Swiper
+        const swiper = new Swiper('.clients-slider', {
+            speed: 400,
+            loop: true,
+            autoplay: {
+                delay: 2000,
+                disableOnInteraction: false
+            },
+            slidesPerView: 'auto',
+            pagination: {
+                el: '.swiper-pagination',
+                type: 'bullets',
+                clickable: true
+            },
+            breakpoints: {
+                320: {
+                    slidesPerView: 2,
+                    spaceBetween: 40
+                },
+                480: {
+                    slidesPerView: 3,
+                    spaceBetween: 60
+                },
+                640: {
+                    slidesPerView: 4,
+                    spaceBetween: 80
+                },
+                992: {
+                    slidesPerView: 6,
+                    spaceBetween: 120
+                }
+            }
+        });
+    </script>
+</body>
+</html>
